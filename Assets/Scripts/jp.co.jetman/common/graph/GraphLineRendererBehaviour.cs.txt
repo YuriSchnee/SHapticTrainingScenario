@@ -1,0 +1,116 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+using System.Net;
+using System.Net.NetworkInformation;
+
+using UnityEngine.UI;
+using System.IO;
+using System.Text;
+
+namespace jp.co.jetman.common.graph
+{
+	[RequireComponent(typeof(LineRenderer))]
+	public class GraphLineRendererBehaviour : MonoBehaviour
+	{
+
+		private List<Vector2> _data;
+		public List<Vector2> data
+		{
+			get
+			{
+				return _data;
+			}
+		}
+
+		private LineRenderer line;
+
+		private List<Vector2> vertPoints = new List<Vector2>();
+
+		private readonly float GRAPH_MAX_HEIGHT = 195.0f;
+		private readonly float GRAPH_MAX_WIDTH = 560.0f;
+
+
+		[SerializeField]
+		private GraphPaintBehaviour _paint;
+
+		#region MonoBehaviour
+		void Awake()
+		{
+			line = GetComponent<LineRenderer>();
+		}
+		void Start () 
+		{
+			reset();
+		}
+		void Update () 
+		{
+			render();
+		}
+		void LateUpdate()
+		{
+			
+		}
+		#endregion
+
+		#region Private Methods
+		private float calcX(float _x)
+		{
+			return _x * GRAPH_MAX_WIDTH;
+		}
+		private float calcY(float _y)
+		{
+			return _y * GRAPH_MAX_HEIGHT;
+		}
+		private void reset()
+		{
+			_data = new List<Vector2>();
+			vertPoints.Clear();
+			if (_paint != null)
+			{
+				_paint.vertices = vertPoints;
+			}
+		}
+		private void render()
+		{
+			var max = data.Count;
+			line.positionCount = max;
+
+			vertPoints.Clear();
+
+			for (var i = 0; i < max; i++)
+			{
+				vertPoints.Add(new Vector2(calcX(data[i].x), calcY(data[i].y)));
+				line.SetPosition(i, new Vector3(vertPoints[i].x, vertPoints[i].y, 0.0f));
+			}
+
+			if (_paint != null)
+			{
+				_paint.vertices = vertPoints;
+				_paint.Draw();
+			}
+		}
+		#endregion
+
+		#region Public Methods
+		public void Reset()
+		{
+			reset();
+		}
+		public void Add(Vector2 _p)
+		{
+			data.Add(_p);
+		}
+		public void SetData(Vector2[] _data)
+		{
+			foreach (var d in _data)
+			{
+				Add(d);
+			}
+		}
+		#endregion
+		
+	}
+
+}
